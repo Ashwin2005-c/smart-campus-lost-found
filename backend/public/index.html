@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Campus Lost &amp; Found System | Intelligent Item Recovery</title>
+  <meta name="description" content="AI-driven Smart Campus Lost and Found Management System with automated match scoring, ownership claim verification, and administrative audit trails.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+
+  <!-- ============================================================
+       NAVBAR
+       ============================================================ -->
+  <header class="navbar" id="appNavbar">
+    <div class="container nav-inner">
+      <div class="brand-group">
+        <div class="brand-logo-icon">📡</div>
+        <div class="brand-text">
+          <h1>CampusFinder <span class="brand-badge">Smart AI</span></h1>
+          <p>Smart Campus Lost &amp; Found Portal</p>
+        </div>
+      </div>
+
+      <nav class="nav-links">
+        <a href="#catalog" class="nav-link active" data-view="catalog" id="navCatalogLink">🔍 Explore Items</a>
+        <a href="#matches" class="nav-link" data-view="matches" id="navMatchesLink">⚡ Smart Matches</a>
+        <a href="#claims" class="nav-link" data-view="claims" id="navClaimsLink">📋 My Claims</a>
+        <a href="#admin" class="nav-link" data-view="admin" id="navAdminLink" style="display: none;">🛡️ Admin Portal</a>
+      </nav>
+
+      <div class="nav-actions">
+        <button class="btn-post-lost" id="btnOpenReportLost">+ Report Lost</button>
+        <button class="btn-post-found" id="btnOpenReportFound">+ Report Found</button>
+
+        <!-- Notification Bell -->
+        <div class="notif-wrapper">
+          <button class="btn-notif" id="btnNotif" title="Notifications" aria-label="Notifications">
+            🔔
+            <span class="notif-badge" id="notifBadge">0</span>
+          </button>
+          <div class="notif-popover" id="notifPopover">
+            <div class="notif-header">
+              <span style="font-weight: 700; font-size: 14px; color: #fff;">Campus Alerts</span>
+              <button id="btnMarkAllRead" style="font-size: 11px; color: #60a5fa;">Mark All Read</button>
+            </div>
+            <div class="notif-list" id="notifList">
+              <!-- Populated by JavaScript -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Auth Section -->
+        <div id="navAuthActions">
+          <button class="btn-login-open" id="btnNavLogin">Sign In / Register</button>
+        </div>
+
+        <div class="user-menu-wrapper" id="navUserMenu" style="display: none;">
+          <button class="btn-user-pill" id="btnUserMenu">
+            <span class="user-avatar" id="navUserAvatar">A</span>
+            <span id="navUserName">User</span>
+            <span class="user-role-tag" id="navUserRole">STUDENT</span>
+          </button>
+          <div class="user-dropdown" id="userDropdown">
+            <button class="dropdown-item" onclick="switchView('matches')">⚡ Smart Matches</button>
+            <button class="dropdown-item" onclick="switchView('claims')">📋 My Claims History</button>
+            <div class="dropdown-divider"></div>
+            <button class="dropdown-item danger" id="btnLogout">🚪 Sign Out</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============================================================
+       HERO BANNER
+       ============================================================ -->
+  <section class="hero-section" id="heroSection">
+    <div class="container">
+      <div class="hero-card">
+        <div class="hero-badge-pill">
+          <span class="pulse-dot"></span>
+          Intelligent Heuristic &amp; Keyword Match Engine Active
+        </div>
+        <h1 class="hero-title">Smart Campus Lost &amp; Found</h1>
+        <p class="hero-desc">
+          Instantly report misplaced belongings, discover automated high-similarity matches, and submit cryptographically verified ownership claims across all campus departments.
+        </p>
+
+        <!-- Quick Search -->
+        <div class="search-bar-box">
+          <div class="search-input-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="heroSearchInput" placeholder="Search by item name, keyword (e.g. Dell backpack, Casio)..." />
+          </div>
+          <div class="search-select-wrap">
+            <select id="heroCategorySelect">
+              <option value="">All Categories</option>
+            </select>
+          </div>
+          <button class="btn-hero-search" id="heroSearchBtn">Find Item</button>
+        </div>
+
+        <!-- Stats Bar -->
+        <div class="hero-stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon blue">📦</div>
+            <div class="stat-content">
+              <h4 id="statTotalItems">0</h4>
+              <p>Total Items Logged</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon red">🔴</div>
+            <div class="stat-content">
+              <h4 id="statActiveLost">0</h4>
+              <p>Active Lost Reports</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green">🟢</div>
+            <div class="stat-content">
+              <h4 id="statActiveFound">0</h4>
+              <p>Active Found Reports</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon purple">🎯</div>
+            <div class="stat-content">
+              <h4 id="statRecovered">0%</h4>
+              <p>Resolution Rate</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       CATALOG VIEW (Default)
+       ============================================================ -->
+  <main class="section-wrap" id="catalogView">
+    <div class="container">
+      <div class="section-header-flex">
+        <div class="section-title">
+          <h2>Campus Lost &amp; Found Catalog</h2>
+          <p>Browse recent reports, filter by category or location, and claim found articles.</p>
+        </div>
+
+        <!-- Type Filter Tabs -->
+        <div class="type-tabs" id="catalogTypeTabs">
+          <button class="tab-btn active" data-type="">All Items</button>
+          <button class="tab-btn tab-lost" data-type="LOST">Lost Items</button>
+          <button class="tab-btn tab-found" data-type="FOUND">Found Items</button>
+          <button class="tab-btn" data-type="RECOVERED">Recovered</button>
+        </div>
+      </div>
+
+      <!-- Secondary Filters Toolbar -->
+      <div class="filters-toolbar">
+        <div class="filter-item">
+          <span>Category:</span>
+          <select id="filterCategorySelect">
+            <option value="">All Categories</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <span>Location:</span>
+          <input type="text" id="filterLocationInput" placeholder="Filter by building / room..." />
+        </div>
+        <button class="btn-reset-filters" id="btnResetFilters">Reset Filters</button>
+      </div>
+
+      <!-- Items Grid -->
+      <div class="items-grid" id="itemsGrid">
+        <!-- Rendered by JavaScript -->
+      </div>
+    </div>
+  </main>
+
+  <!-- ============================================================
+       SMART MATCHES VIEW
+       ============================================================ -->
+  <section class="section-wrap" id="matchesView" style="display: none;">
+    <div class="container">
+      <div class="section-header-flex">
+        <div class="section-title">
+          <h2>⚡ Automated AI Smart Matches</h2>
+          <p>Algorithmically discovered correspondences between lost reports and found items based on category, textual similarity, location proximity, and timeline.</p>
+        </div>
+      </div>
+
+      <div class="matches-grid" id="matchesListContainer">
+        <!-- Rendered by JavaScript -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       MY CLAIMS VIEW
+       ============================================================ -->
+  <section class="section-wrap" id="claimsView" style="display: none;">
+    <div class="container">
+      <div class="section-header-flex">
+        <div class="section-title">
+          <h2>📋 My Ownership Claims &amp; Verification</h2>
+          <p>Track the progress of claims you have filed for found items, along with administrator decisions.</p>
+        </div>
+      </div>
+
+      <div id="myClaimsContainer">
+        <!-- Rendered by JavaScript -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       ADMIN PORTAL VIEW
+       ============================================================ -->
+  <section class="section-wrap" id="adminView" style="display: none;">
+    <div class="container">
+      <div class="section-header-flex">
+        <div class="section-title">
+          <h2>🛡️ Campus Security &amp; Admin Command Center</h2>
+          <p>Review verification claims, inspect audit logs, and trigger system-wide AI matching algorithms.</p>
+        </div>
+        <div>
+          <button class="btn-hero-search" id="btnAdminReMatch" style="font-size: 13px; padding: 8px 16px;">
+            ⚡ Run Global AI Re-Match
+          </button>
+        </div>
+      </div>
+
+      <!-- Admin Top Metrics -->
+      <div class="hero-stats-grid" style="margin-top: 0; margin-bottom: 24px;">
+        <div class="stat-card">
+          <div class="stat-icon blue">📁</div>
+          <div class="stat-content">
+            <h4 id="adminStatItems">0</h4>
+            <p>Total Items In System</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon purple">👥</div>
+          <div class="stat-content">
+            <h4 id="adminStatUsers">0</h4>
+            <p>Registered Campus Users</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon red">⏳</div>
+          <div class="stat-content">
+            <h4 id="adminStatPendingClaims">0</h4>
+            <p>Pending Claims</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green">✅</div>
+          <div class="stat-content">
+            <h4 id="adminStatResolutionRate">0%</h4>
+            <p>Overall Recovery Rate</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-grid">
+        <!-- Pending Claims Table -->
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h3 class="admin-card-title">Pending Claims Queue</h3>
+            <span style="font-size: 12px; color: var(--text-dim);">Verify proof before approval</span>
+          </div>
+          <div class="table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Claimant</th>
+                  <th>Proof of Ownership</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="adminClaimsTableBody">
+                <!-- Rendered by JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Audit Trail -->
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h3 class="admin-card-title">System Audit Log</h3>
+            <span style="font-size: 12px; color: var(--text-dim);">Real-time events</span>
+          </div>
+          <div class="log-stream" id="adminLogsStream">
+            <!-- Rendered by JavaScript -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       MODAL: REPORT ITEM (LOST OR FOUND)
+       ============================================================ -->
+  <div class="modal-overlay" id="reportItemModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title" id="reportModalTitle">Report an Item</h3>
+        <button class="btn-close-modal" aria-label="Close modal">&times;</button>
+      </div>
+      <form id="reportItemForm">
+        <div class="modal-body">
+          <input type="hidden" name="type" id="itemTypeInput" value="LOST" />
+
+          <div class="form-group">
+            <label class="form-label" for="itemNameInput">Item Title / Name *</label>
+            <input type="text" name="item_name" id="itemNameInput" placeholder="e.g. Navy Blue Dell Laptop Bag, Casio Calculator..." required />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="itemCategorySelect">Category *</label>
+              <select name="category_id" id="itemCategorySelect" required>
+                <option value="" disabled selected>Select category</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="itemDateInput">Date Lost/Found *</label>
+              <input type="date" name="item_date" id="itemDateInput" required />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="itemLocationInput">Campus Location *</label>
+            <input type="text" name="location" id="itemLocationInput" placeholder="e.g. Central Library 2nd Floor, Room 204, Cafeteria Food Court..." required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="itemDescInput">Detailed Description</label>
+            <textarea name="description" id="itemDescInput" rows="3" placeholder="Provide color, brand, stickers, serial details, or contents inside..."></textarea>
+          </div>
+
+          <!-- Upload Dropzone -->
+          <div class="form-group">
+            <label class="form-label">Item Photo (Optional)</label>
+            <label class="upload-dropzone" for="itemImageInput">
+              <div style="font-size: 24px; margin-bottom: 4px;">📷</div>
+              <div style="font-size: 13px; font-weight: 600; color: #fff;">Click or drag photo here to upload</div>
+              <div style="font-size: 11px; color: var(--text-dim);">PNG, JPG, or WEBP up to 5MB</div>
+              <input type="file" name="image" id="itemImageInput" accept="image/*" style="display: none;" />
+              <img id="uploadPreviewImg" class="upload-preview" alt="Upload preview" />
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-card-view" onclick="closeModal('reportItemModal')">Cancel</button>
+          <button type="submit" class="btn-hero-search">Submit Report</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       MODAL: ITEM DETAILS
+       ============================================================ -->
+  <div class="modal-overlay" id="itemDetailModal">
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <h3 class="modal-title" id="detailItemTitle">Item Details</h3>
+        <button class="btn-close-modal" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="detailImgContainer" style="margin-bottom: 18px; text-align: center; background: #0f172a; padding: 12px; border-radius: var(--radius-sm);"></div>
+
+        <div style="display: flex; gap: 8px; margin-bottom: 14px;">
+          <span id="detailItemType" class="badge-type lost">LOST</span>
+          <span class="card-category" id="detailItemCategory">Category</span>
+          <span class="badge-status" id="detailItemStatus">ACTIVE</span>
+        </div>
+
+        <div class="form-row" style="margin-bottom: 14px; font-size: 13px;">
+          <div><strong>📍 Location:</strong> <span id="detailItemLocation">Campus</span></div>
+          <div><strong>📅 Date:</strong> <span id="detailItemDate">Date</span></div>
+        </div>
+
+        <div style="margin-bottom: 16px;">
+          <strong style="font-size: 13px; color: #cbd5e1;">Description:</strong>
+          <p id="detailItemDesc" style="color: var(--text-muted); font-size: 14px; margin-top: 4px; line-height: 1.5;"></p>
+        </div>
+
+        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-subtle); padding: 12px; border-radius: var(--radius-sm); font-size: 12px;">
+          <div><strong>Reported by:</strong> <span id="detailReporterName">Student</span></div>
+          <div><strong>Contact Info:</strong> <span id="detailReporterContact">Email / Phone</span></div>
+        </div>
+
+        <!-- Embedded Smart Match Candidates -->
+        <div id="detailMatchesList"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-card-claim" id="detailClaimBtn" style="display: none;">Submit Ownership Claim</button>
+        <button type="button" class="btn-card-view" onclick="closeModal('itemDetailModal')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       MODAL: CLAIM ITEM
+       ============================================================ -->
+  <div class="modal-overlay" id="claimModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">File Ownership Claim</h3>
+        <button class="btn-close-modal" aria-label="Close modal">&times;</button>
+      </div>
+      <form id="claimForm">
+        <div class="modal-body">
+          <input type="hidden" id="claimItemId" />
+          <div style="background: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.3); padding: 12px; border-radius: var(--radius-sm); margin-bottom: 16px; font-size: 13px;">
+            Claiming: <strong id="claimItemNameDisplay" style="color: #67e8f9;">Item</strong>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="claimDescription">Claim Statement *</label>
+            <input type="text" id="claimDescription" placeholder="e.g. This is my Dell backpack lost on second floor library..." required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="claimVerification">Ownership Verification Details *</label>
+            <textarea id="claimVerification" rows="4" placeholder="Specify non-public distinguishing proof (e.g. contents inside, serial number, internal markings, wallpapers, passcode, secret labels)..." required></textarea>
+            <p class="form-help">This proof is verified by the campus security coordinator or item finder before approval.</p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-card-view" onclick="closeModal('claimModal')">Cancel</button>
+          <button type="submit" class="btn-hero-search">Submit Claim for Review</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       MODAL: AUTHENTICATION (LOGIN & REGISTRATION + 1-CLICK DEMO)
+       ============================================================ -->
+  <div class="modal-overlay" id="authModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Campus Account Access</h3>
+        <button class="btn-close-modal" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!-- 1-Click Demo Login Bar -->
+        <div class="demo-accounts-box">
+          <div class="demo-accounts-title">⚡ 1-Click Instant Demo Access (No Typing Required)</div>
+          <div class="demo-buttons-flex">
+            <button type="button" class="btn-demo-pill" id="btnDemoStudent">👨‍🎓 Student (Alex)</button>
+            <button type="button" class="btn-demo-pill" id="btnDemoFinder">👩‍🎓 Finder (Sophia)</button>
+            <button type="button" class="btn-demo-pill" id="btnDemoAdmin">🛡️ Security Admin</button>
+          </div>
+        </div>
+
+        <!-- Auth Tabs -->
+        <div class="type-tabs" style="margin-bottom: 20px;">
+          <button type="button" class="tab-btn active" id="authTabLogin" style="flex: 1;">Sign In</button>
+          <button type="button" class="tab-btn" id="authTabRegister" style="flex: 1;">Register Account</button>
+        </div>
+
+        <!-- Login Form -->
+        <div id="loginFormWrapper">
+          <form id="loginForm">
+            <div class="form-group">
+              <label class="form-label" for="loginEmail">Campus Email</label>
+              <input type="email" id="loginEmail" placeholder="student@campus.edu" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="loginPassword">Password</label>
+              <input type="password" id="loginPassword" placeholder="••••••••" required />
+            </div>
+            <button type="submit" class="btn-hero-search" style="width: 100%; justify-content: center; margin-top: 10px;">
+              Sign In to Campus Portal
+            </button>
+          </form>
+        </div>
+
+        <!-- Registration Form -->
+        <div id="registerFormWrapper" style="display: none;">
+          <form id="registerForm">
+            <div class="form-group">
+              <label class="form-label" for="regName">Full Name *</label>
+              <input type="text" id="regName" placeholder="e.g. John Doe" required />
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="regEmail">Campus Email *</label>
+                <input type="email" id="regEmail" placeholder="user@campus.edu" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="regPhone">Phone Number *</label>
+                <input type="tel" id="regPhone" placeholder="+91 98765 00000" required />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="regUserType">Campus Role *</label>
+                <select id="regUserType" required>
+                  <option value="STUDENT">Student</option>
+                  <option value="FACULTY">Faculty</option>
+                  <option value="STAFF">Staff</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="regDept">Department</label>
+                <input type="text" id="regDept" placeholder="e.g. Computer Science" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="regCollege">College / School</label>
+              <input type="text" id="regCollege" placeholder="e.g. School of Computing" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="regPassword">Password *</label>
+              <input type="password" id="regPassword" placeholder="••••••••" required />
+            </div>
+            <button type="submit" class="btn-hero-search" style="width: 100%; justify-content: center; margin-top: 10px;">
+              Complete Registration
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- JavaScript Files -->
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>
